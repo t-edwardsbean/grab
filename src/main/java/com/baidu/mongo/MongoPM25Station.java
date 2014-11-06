@@ -3,7 +3,6 @@ package com.baidu.mongo;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- *
  * Created by edwardsbean on 14-11-5.
  */
 @Document(collection = "pm25Station")

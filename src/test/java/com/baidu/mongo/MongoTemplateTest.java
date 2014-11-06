@@ -22,7 +22,7 @@ public class MongoTemplateTest {
     MongoTemplate mongoTemplate;
 
     @Test
-    public void testName() throws Exception {
+    public void testSave() throws Exception {
         Gson gson = new Gson();
         String json = "{\"status\":\"OK\",\"weather\":[{\"city_name\":\"北京\",\"city_id\":\"CHBJ000000\",\"last_update\":\"2014-11-05T15:07:56+08:00\",\"air_quality\":{\"city\":{\"aqi\":\"33\",\"pm25\":\"11\",\"pm10\":\"32\",\"so2\":\"6\",\"no2\":\"14\",\"co\":\"0.283\",\"o3\":\"65\",\"quality\":\"优\",\"last_update\":\"2014-11-05T13:00:00+08:00\"},\"stations\":null}}]}";
         ThinkPageAirMsg thinkPageAirMsg = gson.fromJson(json, ThinkPageAirMsg.class);
@@ -31,4 +31,5 @@ public class MongoTemplateTest {
             mongoTemplate.save(weather);
         }
     }
+
 }
