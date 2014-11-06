@@ -5,6 +5,9 @@ package com.baidu.mongo;
  */
 public class MongoPM25City {
     private String city;
+    private String last_update;
+    private String pm25;
+    private String pm25_24h;
 
     public String getCity() {
         return city;
@@ -38,7 +41,5 @@ public class MongoPM25City {
         this.pm25_24h = pm25_24h;
     }
 
-    private String last_update;
-    private String pm25;
-    private String pm25_24h;
+
 }
