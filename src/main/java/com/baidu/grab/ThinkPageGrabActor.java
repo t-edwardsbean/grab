@@ -1,6 +1,8 @@
 package com.baidu.grab;
 
 import akka.actor.*;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import com.baidu.exception.ApiException;
 import com.baidu.exception.HttpException;
@@ -22,7 +24,9 @@ import static akka.actor.SupervisorStrategy.restart;
  * Created by edwardsbean on 14-11-5.
  */
 public class ThinkPageGrabActor extends UntypedActor {
+    LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     private static ActorRef mongoActor;
+    private static String key;
     private Gson gson = new Gson();
 
     private static SupervisorStrategy strategy = new OneForOneStrategy(-1,
@@ -35,15 +39,16 @@ public class ThinkPageGrabActor extends UntypedActor {
 
     @Override
     public void preStart() throws Exception {
-        mongoActor = getContext().actorOf(Props.create(MongoActor.class),
+        mongoActor = getContext().actorOf(Props.create(MongoActor.class).withMailbox("custom-mailbox"),
                 "pm25MongoActor");
         /**
          * TODO 时间校验
          */
         ActorSystem system = getContext().system();
+        system.settings().config().getString("pm25-Key");
         system.scheduler().schedule(
-                Duration.create(10000, TimeUnit.MILLISECONDS),
-                Duration.create(1, TimeUnit.HOURS),
+                Duration.create(1, TimeUnit.SECONDS),
+                Duration.create(3, TimeUnit.SECONDS),
                 getSelf(), new Grab(), system.dispatcher(), null);
     }
 
@@ -55,6 +60,7 @@ public class ThinkPageGrabActor extends UntypedActor {
     //重写preRestart，防止mongoActor受到影响
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
+        log.error(reason,"Restarting due to [{}] when processing [{}]",reason.getMessage());
         Grab grab = new Grab();
         //访问外网失败，重新访问
         getSelf().tell(grab, ActorRef.noSender());
@@ -64,6 +70,7 @@ public class ThinkPageGrabActor extends UntypedActor {
 
     @Override
     public void onReceive(Object message) throws Exception {
+        log.info("收到Grab事件，开始抓取");
         if (message instanceof Grab) {
             try {
                 /**
@@ -71,6 +78,7 @@ public class ThinkPageGrabActor extends UntypedActor {
                  * 获取全部城市，采集点的数据
                  */
                 String json = ThinkPageGrab.getData();
+                log.info("Api调用结果：" + json);
                 //格式化数据
                 ThinkPageAirMsg thinkPageAirMsg = gson.fromJson(json, ThinkPageAirMsg.class);
                 if (!"OK".equals(thinkPageAirMsg.getStatus())) {
@@ -84,6 +92,8 @@ public class ThinkPageGrabActor extends UntypedActor {
                 //时间需要处理
                 city.setLast_update(weather.getAir_quality().getCity().getLast_update());
                 mongoActor.tell(city, getSelf());
+            } catch (ApiException e) {
+                throw e;
             } catch (JsonSyntaxException e) {
                 throw new ApiException("Api返回非天气数据", e);
             } catch (Exception e) {

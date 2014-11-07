@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import com.baidu.GrabMain;
 import com.baidu.mongo.MongoPM25City;
+import com.baidu.mongo.MongoPM25Station;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import scala.Option;
 
@@ -14,7 +15,7 @@ import scala.Option;
  */
 public class MongoActor extends UntypedActor {
     MongoTemplate mongoTemplate;
-    MongoPM25City currentProcess;
+    Object currentProcess;
 
     public MongoActor() {
         mongoTemplate = (MongoTemplate) GrabMain.applicationContext.getBean("mongoTemplate");
@@ -39,6 +40,10 @@ public class MongoActor extends UntypedActor {
             MongoPM25City city = (MongoPM25City) message;
             currentProcess = city;
             mongoTemplate.save(city);
+        } else if (message instanceof MongoPM25Station) {
+            MongoPM25Station station = (MongoPM25Station) message;
+            currentProcess = station;
+            mongoTemplate.save(station);
         }
     }
 }

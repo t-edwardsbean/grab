@@ -1,6 +1,8 @@
 package com.baidu.grab;
 
 import akka.actor.*;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import akka.japi.Function;
 import scala.Option;
 import scala.concurrent.duration.Duration;
@@ -12,15 +14,17 @@ import static akka.actor.SupervisorStrategy.restart;
  * Created by edwardsbean on 14-11-5.
  */
 public class GrabSupervisor extends UntypedActor {
-    public ActorRef pm25GrabActor;
+    LoggingAdapter log = Logging.getLogger(getContext().system(), this);
+    public static ActorRef pm25GrabActor;
     public ActorRef thinkPageGrabActor;
 
     public GrabSupervisor() {
+        //由于pm25网没有私有的Key,所以先不用
         pm25GrabActor = getContext().actorOf(Props.create(PM25GrabActor.class),
                 "pm25GrabActor");
 
-        thinkPageGrabActor = getContext().actorOf(Props.create(ThinkPageGrabActor.class),
-                "thinkPageGrabActor");
+//        thinkPageGrabActor = getContext().actorOf(Props.create(ThinkPageGrabActor.class),
+//                "thinkPageGrabActor");
     }
 
     private static SupervisorStrategy strategy = new OneForOneStrategy(-1,
