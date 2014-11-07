@@ -4,6 +4,8 @@ import akka.actor.*;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.Function;
+import com.baidu.message.GrabCity;
+import com.baidu.message.GrabStation;
 import scala.Option;
 import scala.concurrent.duration.Duration;
 
@@ -19,7 +21,6 @@ public class GrabSupervisor extends UntypedActor {
     public ActorRef thinkPageGrabActor;
 
     public GrabSupervisor() {
-        //由于pm25网没有私有的Key,所以先不用
         pm25GrabActor = getContext().actorOf(Props.create(PM25GrabActor.class),
                 "pm25GrabActor");
 
@@ -52,5 +53,13 @@ public class GrabSupervisor extends UntypedActor {
     @Override
     public void onReceive(Object message) throws Exception {
 
+    }
+
+    public static void startGrabCity() {
+        pm25GrabActor.tell(new GrabCity(), ActorRef.noSender());
+    }
+
+    public static void startGrabStation() {
+        pm25GrabActor.tell(new GrabStation(), ActorRef.noSender());
     }
 }

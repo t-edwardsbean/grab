@@ -20,7 +20,6 @@ import scala.Option;
 import scala.concurrent.duration.Duration;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import static akka.actor.SupervisorStrategy.restart;
 import akka.actor.OneForOneStrategy;
 import akka.actor.SupervisorStrategy;
@@ -52,16 +51,6 @@ public class PM25GrabActor extends UntypedActor {
          * TODO 时间校验
          */
         ActorSystem system = getContext().system();
-        system.scheduler().schedule(
-                Duration.create(10000, TimeUnit.MILLISECONDS),
-                Duration.create(1, TimeUnit.HOURS),
-                getSelf(), new GrabCity(), system.dispatcher(), null);
-
-        system.scheduler().schedule(
-                Duration.create(10000, TimeUnit.MILLISECONDS),
-                Duration.create(1, TimeUnit.HOURS),
-                getSelf(), new GrabStation(), system.dispatcher(), null);
-
         key = system.settings().config().getString("pm25-key");
     }
 
