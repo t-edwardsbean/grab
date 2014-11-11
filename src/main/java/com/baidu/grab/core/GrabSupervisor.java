@@ -48,7 +48,6 @@ public class GrabSupervisor extends UntypedActor {
 
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
-        postStop();
     }
 
     @Override

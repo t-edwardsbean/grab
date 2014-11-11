@@ -1,8 +1,11 @@
 package com.baidu.grab.mongo;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 /**
  * Created by edwardsbean on 14-11-5.
  */
+@Document(collection = "pm25City")
 public class MongoPM25City {
     private String city;
     private String last_update;

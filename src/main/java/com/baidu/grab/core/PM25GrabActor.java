@@ -19,6 +19,9 @@ import com.google.gson.reflect.TypeToken;
 import scala.Option;
 import scala.concurrent.duration.Duration;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import static akka.actor.SupervisorStrategy.restart;
@@ -48,9 +51,6 @@ public class PM25GrabActor extends UntypedActor {
         log.info("PM25GrabActor preStart");
         mongoActor = getContext().actorOf(Props.create(MongoActor.class).withMailbox("custom-mailbox"),
                 "pm25MongoActor");
-        /**
-         * TODO 时间校验
-         */
         ActorSystem system = getContext().system();
         key = system.settings().config().getString("pm25-key");
     }
@@ -69,6 +69,19 @@ public class PM25GrabActor extends UntypedActor {
     }
 
 
+    private String parseTime(String time) {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        SimpleDateFormat newDf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        Date newTime;
+        try {
+            newTime = df.parse(time);
+        } catch (ParseException e) {
+            log.warning("格式化时间出错",e);
+            return  time;
+        }
+        return newDf.format(newTime);
+    }
+
     @Override
     public void onReceive(Object message) throws Exception {
         if (message instanceof GrabCity) {
@@ -81,10 +94,8 @@ public class PM25GrabActor extends UntypedActor {
                 for (PM25Msg pm25Msg : pm25CityMsgs) {
                     MongoPM25City city = new MongoPM25City();
                     city.setCity(pm25Msg.getArea());
-                    /**
-                     * TODO 时间格式转换，更新时间如果改变则告警
-                     */
-                    city.setLast_update(pm25Msg.getTime_point());
+                    //统一做格式转换
+                    city.setLast_update(parseTime(pm25Msg.getTime_point()));
                     city.setPm25_24h(pm25Msg.getPm2_5_24h());
                     city.setPm25(pm25Msg.getPm2_5());
                     mongoActor.tell(city, getSelf());
@@ -106,10 +117,8 @@ public class PM25GrabActor extends UntypedActor {
                 for (PM25Msg pm25Msg : pm25StationMsgs) {
                     MongoPM25Station station = new MongoPM25Station();
                     station.setCity(pm25Msg.getArea());
-                    /**
-                     * TODO 时间格式转换，更新时间如果改变则告警
-                     */
-                    station.setLast_update(pm25Msg.getTime_point());
+                    //统一做时间转换
+                    station.setLast_update(parseTime(pm25Msg.getTime_point()));
                     station.setPm25_24h(pm25Msg.getPm2_5_24h());
                     station.setPm25(pm25Msg.getPm2_5());
                     station.setStation(pm25Msg.getPosition_name());

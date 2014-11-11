@@ -21,6 +21,5 @@ public class ActorManager {
         system = ActorSystem.create("grabSystem", config);
         system.actorOf(Props.create(GrabSupervisor.class),
                 "supervisor");
-        system.awaitTermination();
     }
 }
