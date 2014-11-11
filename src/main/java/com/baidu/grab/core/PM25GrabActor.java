@@ -20,7 +20,9 @@ import scala.Option;
 import scala.concurrent.duration.Duration;
 
 import java.util.List;
+
 import static akka.actor.SupervisorStrategy.restart;
+
 import akka.actor.OneForOneStrategy;
 import akka.actor.SupervisorStrategy;
 
@@ -32,7 +34,6 @@ public class PM25GrabActor extends UntypedActor {
     private static ActorRef mongoActor;
     private static String key;
     private Gson gson = new Gson();
-    Object currentProcess;
 
     private static SupervisorStrategy strategy = new OneForOneStrategy(-1,
             Duration.create("10 second"), new Function<Throwable, SupervisorStrategy.Directive>() {
@@ -62,15 +63,14 @@ public class PM25GrabActor extends UntypedActor {
     //重写preRestart，防止mongoActor受到影响
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
-        log.error(reason, "Restarting due to [{}] when processing [{}]", reason.getMessage());
+        log.error(reason, "PMActor Restarting due to [{}] when processing [{}]", reason.getMessage());
         //访问外网失败，重新访问
-        getSelf().tell(currentProcess, ActorRef.noSender());
+        getSelf().tell(message.get(), ActorRef.noSender());
     }
 
 
     @Override
     public void onReceive(Object message) throws Exception {
-        currentProcess = message;
         if (message instanceof GrabCity) {
             log.info("收到GrabCity事件，开始抓取");
             try {
@@ -81,7 +81,9 @@ public class PM25GrabActor extends UntypedActor {
                 for (PM25Msg pm25Msg : pm25CityMsgs) {
                     MongoPM25City city = new MongoPM25City();
                     city.setCity(pm25Msg.getArea());
-                    //时间需要处理
+                    /**
+                     * TODO 时间格式转换，更新时间如果改变则告警
+                     */
                     city.setLast_update(pm25Msg.getTime_point());
                     city.setPm25_24h(pm25Msg.getPm2_5_24h());
                     city.setPm25(pm25Msg.getPm2_5());
@@ -100,11 +102,13 @@ public class PM25GrabActor extends UntypedActor {
                 String stationJson = PM25Grab.getAllStationData(key);
                 List<PM25Msg> pm25StationMsgs = gson.fromJson(stationJson, new TypeToken<List<PM25Msg>>() {
                 }.getType());
-                //过滤字段，封装成MongoPM25City
+                //过滤字段，封装成MongoPM25Station
                 for (PM25Msg pm25Msg : pm25StationMsgs) {
                     MongoPM25Station station = new MongoPM25Station();
                     station.setCity(pm25Msg.getArea());
-                    //时间需要处理
+                    /**
+                     * TODO 时间格式转换，更新时间如果改变则告警
+                     */
                     station.setLast_update(pm25Msg.getTime_point());
                     station.setPm25_24h(pm25Msg.getPm2_5_24h());
                     station.setPm25(pm25Msg.getPm2_5());

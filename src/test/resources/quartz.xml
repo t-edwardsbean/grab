@@ -4,23 +4,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!--要调用的工作类-->
-    <bean id="hourJob" class="com.baidu.grab.schedule.PM25HourJob"/>
-
-    <!--调用对象和方法-->
-    <bean id="hourTask" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-        <property name="targetObject" ref="hourJob"/>
-        <property name="targetMethod" value="grab"/>
-    </bean>
-
-    <!--触发时间-->
-    <bean id="runTime" class="org.springframework.scheduling.quartz.CronTriggerBean">
-        <property name="jobDetail" ref="hourTask"/>
-        <!--47分的时候执行一次任务-->
-        <property name="cronExpression" value="0 47 * * * ?"/>
-    </bean>
-
-
-    <!--要调用的工作类-->
     <bean id="tpHourJob" class="com.baidu.grab.schedule.ThinkPageHourJob"/>
 
     <!--调用对象和方法-->
@@ -32,8 +15,8 @@
     <!--触发时间-->
     <bean id="tpRunTime" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="tpHourTask"/>
-        <!--5分的时候执行一次任务-->
-        <property name="cronExpression" value="0 5 * * * ?"/>
+        <!--47分的时候执行一次任务-->
+        <property name="cronExpression" value="0/1 * * * * ?"/>
     </bean>
 
     <!--设置调度 总管理类 如果将lazy-init='false'那么容器启动就会执行调度程序 -->
@@ -41,7 +24,6 @@
           class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
-                <ref bean="runTime"/>
                 <ref bean="tpRunTime"/>
             </list>
         </property>

@@ -4,6 +4,7 @@ import akka.actor.*;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.Function;
+import com.baidu.grab.message.Grab;
 import com.baidu.grab.message.GrabCity;
 import com.baidu.grab.message.GrabStation;
 import scala.Option;
@@ -18,14 +19,14 @@ import static akka.actor.SupervisorStrategy.restart;
 public class GrabSupervisor extends UntypedActor {
     LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     public static ActorRef pm25GrabActor;
-    public ActorRef thinkPageGrabActor;
+    public static ActorRef thinkPageGrabActor;
 
     public GrabSupervisor() {
         pm25GrabActor = getContext().actorOf(Props.create(PM25GrabActor.class),
                 "pm25GrabActor");
 
-//        thinkPageGrabActor = getContext().actorOf(Props.create(ThinkPageGrabActor.class),
-//                "thinkPageGrabActor");
+        thinkPageGrabActor = getContext().actorOf(Props.create(ThinkPageGrabActor.class),
+                "thinkPageGrabActor");
     }
 
     private static SupervisorStrategy strategy = new OneForOneStrategy(-1,
@@ -53,6 +54,10 @@ public class GrabSupervisor extends UntypedActor {
     @Override
     public void onReceive(Object message) throws Exception {
 
+    }
+
+    public static void grabCity(String city) {
+        thinkPageGrabActor.tell(new Grab(city),ActorRef.noSender());
     }
 
     public static void startGrabCity() {

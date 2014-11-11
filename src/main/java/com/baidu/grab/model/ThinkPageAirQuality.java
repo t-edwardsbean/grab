@@ -7,6 +7,15 @@ import java.util.List;
  */
 public class ThinkPageAirQuality {
     private ThinkPageCity city;
+
+    public List<ThinkPageStation> getStations() {
+        return stations;
+    }
+
+    public void setStations(List<ThinkPageStation> stations) {
+        this.stations = stations;
+    }
+
     private List<ThinkPageStation> stations;
 
     public ThinkPageCity getCity() {

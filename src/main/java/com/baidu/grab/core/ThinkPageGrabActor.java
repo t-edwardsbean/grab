@@ -8,14 +8,17 @@ import com.baidu.grab.exception.ApiException;
 import com.baidu.grab.exception.HttpException;
 import com.baidu.grab.message.Grab;
 import com.baidu.grab.model.ThinkPageAirMsg;
+import com.baidu.grab.model.ThinkPageStation;
 import com.baidu.grab.model.ThinkPageWeather;
 import com.baidu.grab.mongo.MongoPM25City;
+import com.baidu.grab.mongo.MongoPM25Station;
 import com.baidu.grab.tools.ThinkPageGrab;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import scala.Option;
 import scala.concurrent.duration.Duration;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static akka.actor.SupervisorStrategy.restart;
@@ -28,7 +31,6 @@ public class ThinkPageGrabActor extends UntypedActor {
     private static ActorRef mongoActor;
     private static String key;
     private Gson gson = new Gson();
-    Object currentProcess;
 
 
     private static SupervisorStrategy strategy = new OneForOneStrategy(-1,
@@ -41,17 +43,14 @@ public class ThinkPageGrabActor extends UntypedActor {
 
     @Override
     public void preStart() throws Exception {
+        log.info("ThinkPageGrabActor preStart");
         mongoActor = getContext().actorOf(Props.create(MongoActor.class).withMailbox("custom-mailbox"),
-                "pm25MongoActor");
+                "tpMongoActor");
         /**
          * TODO 时间校验
          */
         ActorSystem system = getContext().system();
-        system.settings().config().getString("pm25-Key");
-        system.scheduler().schedule(
-                Duration.create(1, TimeUnit.SECONDS),
-                Duration.create(3, TimeUnit.SECONDS),
-                getSelf(), new Grab(), system.dispatcher(), null);
+        key = system.settings().config().getString("tp-key");
     }
 
     //重写postRestart,防止preStart又一次进行初始化
@@ -62,23 +61,19 @@ public class ThinkPageGrabActor extends UntypedActor {
     //重写preRestart，防止mongoActor受到影响
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
-        log.error(reason,"Restarting due to [{}] when processing [{}]",reason.getMessage());
+        log.error(reason, "ThinkPageActor Restarting due to [{}] when processing [{}]", reason.getMessage());
         //访问外网失败，重新访问
-        getSelf().tell(currentProcess, ActorRef.noSender());
+        getSelf().tell(message.get(), ActorRef.noSender());
     }
 
 
     @Override
     public void onReceive(Object message) throws Exception {
-        currentProcess = message;
-        log.info("收到Grab事件，开始抓取");
+        log.debug("收到Grab事件，开始抓取");
         if (message instanceof Grab) {
             try {
-                /**
-                 * TODO
-                 * 获取全部城市，采集点的数据
-                 */
-                String json = ThinkPageGrab.getData();
+                Grab grab = (Grab) message;
+                String json = ThinkPageGrab.getData(grab.getCity(), key);
                 log.info("Api调用结果：" + json);
                 //格式化数据
                 ThinkPageAirMsg thinkPageAirMsg = gson.fromJson(json, ThinkPageAirMsg.class);
@@ -90,9 +85,24 @@ public class ThinkPageGrabActor extends UntypedActor {
                 MongoPM25City city = new MongoPM25City();
                 city.setCity(weather.getCity_name());
                 city.setPm25(weather.getAir_quality().getCity().getPm25());
-                //时间需要处理
+                /**
+                 * TODO 时间格式转换，更新时间如果改变则告警
+                 */
                 city.setLast_update(weather.getAir_quality().getCity().getLast_update());
                 mongoActor.tell(city, getSelf());
+
+                //过滤字段，封装成MongoPM25Station
+                List<ThinkPageStation> stations = weather.getAir_quality().getStations();
+                for (ThinkPageStation station : stations) {
+                    MongoPM25Station mongoPM25Station = new MongoPM25Station();
+                    mongoPM25Station.setCity(city.getCity());
+                    /**
+                     * TODO 时间格式转换，更新时间如果改变则告警
+                     */
+                    mongoPM25Station.setLast_update(station.getLast_update());
+                    mongoPM25Station.setPm25(station.getPm25());
+                    mongoPM25Station.setStation(station.getStation());
+                }
             } catch (ApiException e) {
                 throw e;
             } catch (JsonSyntaxException e) {

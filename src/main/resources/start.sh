@@ -3,7 +3,7 @@
 # main
 ################################
 # FRAMEWORK_HOME必填
-FRAMEWORK_HOME="/home/edwardsbean/workspace/grab/target/grab"
+FRAMEWORK_HOME="/home/edwardsbean/grab"
 
 FRAMWORK_MAIN_CLASS="com.baidu.grab.GrabMain"
 FRAMEWORK_CLASSPATH=""
