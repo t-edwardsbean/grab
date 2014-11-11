@@ -1,7 +1,7 @@
 package com.baidu.mongo;
 
-import com.baidu.model.ThinkPageAirMsg;
-import com.baidu.model.ThinkPageWeather;
+import com.baidu.grab.model.ThinkPageAirMsg;
+import com.baidu.grab.model.ThinkPageWeather;
 import com.google.gson.Gson;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -4,7 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!--要调用的工作类-->
-    <bean id="hourJob" class="com.baidu.schedule.HourJob"/>
+    <bean id="hourJob" class="com.baidu.grab.schedule.HourJob"/>
 
     <!--调用对象和方法-->
     <bean id="hourTask" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
