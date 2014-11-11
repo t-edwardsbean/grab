@@ -16,7 +16,7 @@ public class GrabMain {
 
     public static void main(String[] args) throws Exception {
         log.info("启动应用程序");
-        applicationContext = new ClassPathXmlApplicationContext("mongo.xml","quartz.xml");
+        applicationContext = new ClassPathXmlApplicationContext("mongo.xml","quartz.xml","dict.xml");
         ActorManager manager = new ActorManager();
         manager.startApplication();
     }

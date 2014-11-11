@@ -34,6 +34,7 @@ public class ThinkPageGrabActor extends UntypedActor {
     private static ActorRef mongoActor;
     private static String key;
     private Gson gson = new Gson();
+    private Object currentProcess;
 
 
     private static SupervisorStrategy strategy = new OneForOneStrategy(-1,
@@ -61,9 +62,9 @@ public class ThinkPageGrabActor extends UntypedActor {
     //重写preRestart，防止mongoActor受到影响
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
-        log.error(reason, "ThinkPageActor Restarting due to [{}] when processing [{}]", reason.getMessage());
+        log.error(reason, "ThinkPageActor Restarting due to [{}] when processing [{}]", reason.getMessage(),currentProcess);
         //访问外网失败，重新访问
-        getSelf().tell(message.get(), ActorRef.noSender());
+        getSelf().tell(currentProcess, ActorRef.noSender());
     }
     private String parseTime(String time) {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -80,6 +81,7 @@ public class ThinkPageGrabActor extends UntypedActor {
 
     @Override
     public void onReceive(Object message) throws Exception {
+        currentProcess = message;
         log.debug("收到Grab事件，开始抓取");
         if (message instanceof Grab) {
             try {
@@ -88,6 +90,12 @@ public class ThinkPageGrabActor extends UntypedActor {
                 log.debug("Api调用结果：" + json);
                 //格式化数据
                 ThinkPageAirMsg thinkPageAirMsg = gson.fromJson(json, ThinkPageAirMsg.class);
+                /**
+                 * status:
+                 * 1:OK
+                 * 2:Invalid city parameter.
+                 * 3:？
+                 */
                 if (!"OK".equals(thinkPageAirMsg.getStatus())) {
                     throw new ApiException("Api返回非天气数据");
                 }
