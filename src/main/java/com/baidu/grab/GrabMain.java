@@ -24,7 +24,7 @@ public class GrabMain {
         MDC.put("host", address);
         MDC.put("source", "grabApp");
         PropertyConfigurator.configure("conf/log4j.properties");
-        log.error("启动grabApp");
+        System.setProperty("org.terracotta.quartz.skipUpdateCheck","true");
         applicationContext = new ClassPathXmlApplicationContext("mongo.xml","quartz.xml","dict.xml");
         ActorManager manager = new ActorManager();
         manager.startApplication();

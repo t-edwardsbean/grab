@@ -1,6 +1,10 @@
 package com.baidu.mongo;
 
 import org.junit.Test;
+import scala.Function0;
+import scala.None;
+import scala.Option;
+import scala.Some;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

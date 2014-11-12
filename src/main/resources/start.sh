@@ -21,8 +21,6 @@ fi
 
 cd $FRAMEWORK_HOME
 
-EXEC="exec"
-
 # find java
 if [ -z "${JAVA_HOME}" ] ; then
   echo "JAVA_HOME is not set!"
@@ -32,8 +30,8 @@ fi
 FRAMEWORK_CLASSPATH="${opt_conf}:${FRAMEWORK_HOME}/lib/*"
 
 run_framework() {
-  echo $FRAMEWORK_CLASSPATH
-  $EXEC $JAVA_HOME/bin/java -cp $FRAMEWORK_CLASSPATH $FRAMWORK_MAIN_CLASS
+  echo "java -cp $FRAMEWORK_CLASSPATH $FRAMWORK_MAIN_CLASS"
+  nohup $JAVA_HOME/bin/java -cp $FRAMEWORK_CLASSPATH $FRAMWORK_MAIN_CLASS > /dev/null 2>&1 &
 }
 
 run_framework
