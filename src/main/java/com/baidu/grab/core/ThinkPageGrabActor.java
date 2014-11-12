@@ -90,11 +90,11 @@ public class ThinkPageGrabActor extends UntypedActor {
                 log.debug("Api调用结果：" + json);
                 //格式化数据
                 ThinkPageAirMsg thinkPageAirMsg = gson.fromJson(json, ThinkPageAirMsg.class);
-                /**
-                 * status:
-                 * 1:OK
-                 * 2:Invalid city parameter.
-                 * 3:？
+                /*
+                  status:
+                  1:OK
+                  2:Invalid city parameter.
+                  3:？
                  */
                 if (!"OK".equals(thinkPageAirMsg.getStatus())) {
                     throw new ApiException("Api返回非天气数据");
