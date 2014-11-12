@@ -6,7 +6,9 @@ import com.baidu.grab.GrabMain;
 import com.baidu.grab.mongo.MongoPM25City;
 import com.baidu.grab.mongo.MongoPM25Station;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import scala.Function0;
 import scala.Option;
+import scala.runtime.AbstractFunction0;
 
 
 /**
@@ -24,7 +26,12 @@ public class MongoActor extends UntypedActor {
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
         //数据恢复，重新发送回邮箱
-        getSelf().tell(message.get(), ActorRef.noSender());
+        getSelf().tell(message.getOrElse(new AbstractFunction0<Object>(){
+            @Override
+            public Object apply() {
+                return "空消息";
+            }
+        }), ActorRef.noSender());
     }
 
     @Override

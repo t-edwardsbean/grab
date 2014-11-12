@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import scala.Option;
 import scala.concurrent.duration.Duration;
+import scala.runtime.AbstractFunction0;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -34,7 +35,6 @@ public class ThinkPageGrabActor extends UntypedActor {
     private static ActorRef mongoActor;
     private static String key;
     private Gson gson = new Gson();
-    private Object currentProcess;
 
 
     private static SupervisorStrategy strategy = new OneForOneStrategy(-1,
@@ -62,9 +62,15 @@ public class ThinkPageGrabActor extends UntypedActor {
     //重写preRestart，防止mongoActor受到影响
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
-        log.error(reason, "ThinkPageActor Restarting due to [{}] when processing [{}]", reason.getMessage(),currentProcess);
+        String m = message.getOrElse(new AbstractFunction0<Object>(){
+            @Override
+            public Object apply() {
+                return "空消息";
+            }
+        }).toString();
+        log.error(reason, "ThinkPageActor Restarting due to [{}] when processing [{}]", reason.getMessage(),m);
         //访问外网失败，重新访问
-        getSelf().tell(currentProcess, ActorRef.noSender());
+        getSelf().tell(m, ActorRef.noSender());
     }
     private String parseTime(String time) {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -81,13 +87,12 @@ public class ThinkPageGrabActor extends UntypedActor {
 
     @Override
     public void onReceive(Object message) throws Exception {
-        currentProcess = message;
         log.debug("收到Grab事件，开始抓取");
         if (message instanceof Grab) {
+            String json = "";
             try {
                 Grab grab = (Grab) message;
-                String json = ThinkPageGrab.getData(grab.getCity(), key);
-                log.debug("Api调用结果：" + json);
+                json = ThinkPageGrab.getData(grab.getCity(), key);
                 //格式化数据
                 ThinkPageAirMsg thinkPageAirMsg = gson.fromJson(json, ThinkPageAirMsg.class);
                 /*
@@ -97,7 +102,7 @@ public class ThinkPageGrabActor extends UntypedActor {
                   3:？
                  */
                 if (!"OK".equals(thinkPageAirMsg.getStatus())) {
-                    throw new ApiException("Api返回非天气数据");
+                    throw new ApiException(grab.toString() + " Api返回非天气数据:" + json);
                 }
                 //过滤字段，封装成MongoPM25City
                 ThinkPageWeather weather = thinkPageAirMsg.getWeather().get(0);
@@ -120,7 +125,7 @@ public class ThinkPageGrabActor extends UntypedActor {
             } catch (ApiException e) {
                 throw e;
             } catch (JsonSyntaxException e) {
-                throw new ApiException("Api返回非天气数据", e);
+                throw new ApiException("Api返回非天气数据格式有问题:" + json, e);
             } catch (Exception e) {
                 throw new HttpException("无法访问数据源", e);
             }

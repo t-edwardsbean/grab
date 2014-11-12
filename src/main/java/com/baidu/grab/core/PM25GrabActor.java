@@ -28,6 +28,7 @@ import static akka.actor.SupervisorStrategy.restart;
 
 import akka.actor.OneForOneStrategy;
 import akka.actor.SupervisorStrategy;
+import scala.runtime.AbstractFunction0;
 
 /**
  * Created by edwardsbean on 14-11-5.
@@ -63,9 +64,15 @@ public class PM25GrabActor extends UntypedActor {
     //重写preRestart，防止mongoActor受到影响
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
-        log.error(reason, "PMActor Restarting due to [{}] when processing [{}]", reason.getMessage());
+        String m = message.getOrElse(new AbstractFunction0<Object>(){
+            @Override
+            public Object apply() {
+                return "空消息";
+            }
+        }).toString();
+        log.error(reason, "PMActor Restarting due to [{}] when processing [{}]", reason.getMessage(),m);
         //访问外网失败，重新访问
-        getSelf().tell(message.get(), ActorRef.noSender());
+        getSelf().tell(m, ActorRef.noSender());
     }
 
 
@@ -86,8 +93,9 @@ public class PM25GrabActor extends UntypedActor {
     public void onReceive(Object message) throws Exception {
         if (message instanceof GrabCity) {
             log.info("收到GrabCity事件，开始抓取");
+            String cityJson = "";
             try {
-                String cityJson = PM25Grab.getAllCityData(key);
+                cityJson = PM25Grab.getAllCityData(key);
                 List<PM25Msg> pm25CityMsgs = gson.fromJson(cityJson, new TypeToken<List<PM25Msg>>() {
                 }.getType());
                 //过滤字段，封装成MongoPM25City
@@ -102,15 +110,16 @@ public class PM25GrabActor extends UntypedActor {
                 }
 
             } catch (JsonSyntaxException e) {
-                throw new ApiException("Api返回非天气数据", e);
+                throw new ApiException("GrabCity Api返回非天气数据:" + cityJson, e);
             } catch (Exception e) {
-                throw new HttpException("无法访问数据源", e);
+                throw new HttpException("GrabCity Api无法访问数据源", e);
             }
 
         } else if (message instanceof GrabStation) {
+            String stationJson = "";
             try {
                 log.info("收到GrabStation事件，开始抓取");
-                String stationJson = PM25Grab.getAllStationData(key);
+                stationJson = PM25Grab.getAllStationData(key);
                 List<PM25Msg> pm25StationMsgs = gson.fromJson(stationJson, new TypeToken<List<PM25Msg>>() {
                 }.getType());
                 //过滤字段，封装成MongoPM25Station
@@ -125,9 +134,9 @@ public class PM25GrabActor extends UntypedActor {
                     mongoActor.tell(station, getSelf());
                 }
             } catch (JsonSyntaxException e) {
-                throw new ApiException("Api返回非天气数据", e);
+                throw new ApiException("GrabStation Api返回非天气数据:" + stationJson, e);
             } catch (Exception e) {
-                throw new HttpException("无法访问数据源", e);
+                throw new HttpException("GrabStation Api无法访问数据源", e);
             }
         }
     }
