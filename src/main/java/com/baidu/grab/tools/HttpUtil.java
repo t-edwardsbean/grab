@@ -7,6 +7,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +25,15 @@ public class HttpUtil {
     private HttpRequestBase httpRequest;
 
     public HttpClient getClient() {
-        return new DefaultHttpClient();// 获取HttpClient对象        client;
+        HttpClient client = new DefaultHttpClient();// 获取HttpClient对象
+        client.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT,10000);
+        return client;// 获取HttpClient对象        client;
     }
 
     public HttpClient getClient(String proxy) {
         HttpClient client = new DefaultHttpClient();// 获取HttpClient对象
         client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, new HttpHost(proxy));
+        client.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT,10000);
         return client;
     }
 
