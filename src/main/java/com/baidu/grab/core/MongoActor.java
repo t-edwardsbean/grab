@@ -46,6 +46,8 @@ public class MongoActor extends UntypedActor {
         } else if (message instanceof MongoPM25Station) {
             MongoPM25Station station = (MongoPM25Station) message;
             mongoTemplate.save(station);
+        } else {
+            unhandled(message);
         }
     }
 }

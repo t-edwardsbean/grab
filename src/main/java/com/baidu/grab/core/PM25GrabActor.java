@@ -64,13 +64,13 @@ public class PM25GrabActor extends UntypedActor {
     //重写preRestart，防止mongoActor受到影响
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
-        String m = message.getOrElse(new AbstractFunction0<Object>(){
+        Object m = message.getOrElse(new AbstractFunction0<Object>(){
             @Override
             public Object apply() {
                 return "空消息";
             }
-        }).toString();
-        log.error(reason, "PMActor Restarting due to [{}] when processing [{}]", reason.getMessage(),m);
+        });
+        log.warning("PMActor Restarting due to [{}] when processing [{}]", reason.getMessage(),m.toString());
         //访问外网失败，重新访问
         getSelf().tell(m, ActorRef.noSender());
     }
@@ -138,6 +138,8 @@ public class PM25GrabActor extends UntypedActor {
             } catch (Exception e) {
                 throw new HttpException("GrabStation Api无法访问数据源", e);
             }
+        } else {
+            unhandled(message);
         }
     }
 }

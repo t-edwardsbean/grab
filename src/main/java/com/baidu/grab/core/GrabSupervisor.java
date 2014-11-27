@@ -28,17 +28,14 @@ public class GrabSupervisor extends UntypedActor {
         pm25GrabActor = getContext().actorOf(Props.create(PM25GrabActor.class),
                 "pm25GrabActor");
 
-        thinkPageGrabActor = getContext().actorOf(Props.create(ThinkPageGrabActor.class),
-                "thinkPageGrabActor");
+//        thinkPageGrabActor = getContext().actorOf(Props.create(ThinkPageGrabActor.class),
+//                "thinkPageGrabActor");
     }
 
     private static SupervisorStrategy strategy = new OneForOneStrategy(-1,
             Duration.create("10 second"), new Function<Throwable, SupervisorStrategy.Directive>() {
         public SupervisorStrategy.Directive apply(Throwable t) {
-            if (t instanceof HttpException) {
-                //如果GrabActor访问外网出错，则重启它,并重试抓取
-                return restart();
-            } else if (t instanceof ApiException) {
+            if (t instanceof ApiException) {
                 /*
                    如果数据源Api返回非正常格式数据:
                    1：数据源服务端更改了城市名，比如thinkpage将胶南改成了黄岛
@@ -47,8 +44,10 @@ public class GrabSupervisor extends UntypedActor {
                    则忽略该次调用,并告警
                  */
                 return resume();
+            } else {
+                //如果GrabActor访问外网出错，则重启它,并重试抓取
+                return restart();
             }
-            return restart();
         }
     });
 
