@@ -49,7 +49,7 @@ public class GrabSupervisor extends UntypedActor {
                 return restart();
             }
         }
-    });
+    },false);
 
     @Override
     public void postStop() throws Exception {

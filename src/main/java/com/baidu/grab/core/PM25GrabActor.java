@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static akka.actor.SupervisorStrategy.restart;
 
@@ -41,11 +42,12 @@ public class PM25GrabActor extends UntypedActor {
 
     private static SupervisorStrategy strategy = new OneForOneStrategy(-1,
             Duration.create("10 second"), new Function<Throwable, SupervisorStrategy.Directive>() {
+
         public SupervisorStrategy.Directive apply(Throwable t) {
             //如果mongoActor出错，则重启它
             return restart();
         }
-    });
+    },false);
 
     @Override
     public void preStart() throws Exception {
@@ -71,8 +73,10 @@ public class PM25GrabActor extends UntypedActor {
             }
         });
         log.warning("PMActor Restarting due to [{}] when processing [{}]", reason.getMessage(),m.toString());
-        //访问外网失败，重新访问
-        getSelf().tell(m, ActorRef.noSender());
+        //访问外网失败，延迟3s,重新访问
+        ActorSystem system = getContext().system();
+        system.scheduler().scheduleOnce(Duration.apply(3, TimeUnit.SECONDS),
+                getSelf(), m, system.dispatcher(), ActorRef.noSender());
     }
 
 

@@ -17,9 +17,15 @@ public class ActorManager {
     public static ActorSystem system;
     public void startApplication() {
         log.info("加载Actor配置文件");
-        Config config = ConfigFactory.load();
-        system = ActorSystem.create("grabSystem", config);
-        system.actorOf(Props.create(GrabSupervisor.class),
-                "supervisor");
+        try {
+            Config config = ConfigFactory.load();
+            system = ActorSystem.create("grabSystem", config);
+            system.actorOf(Props.create(GrabSupervisor.class),
+                    "supervisor");
+            system.awaitTermination();
+            log.error("grabSystem异常退出");
+        } catch (Exception e) {
+            log.error("grabSystem异常退出",e);
+        }
     }
 }
