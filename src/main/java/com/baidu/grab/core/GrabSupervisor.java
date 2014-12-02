@@ -73,11 +73,11 @@ public class GrabSupervisor extends UntypedActor {
         thinkPageGrabActor.tell(new Grab(city), ActorRef.noSender());
     }
 
-    public static void startGrabCity() {
+/*    public static void startGrabCity() {
         pm25GrabActor.tell(new GrabCity(), ActorRef.noSender());
     }
 
     public static void startGrabStation() {
         pm25GrabActor.tell(new GrabStation(), ActorRef.noSender());
-    }
+    }*/
 }
