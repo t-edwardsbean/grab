@@ -42,7 +42,7 @@
         <property name="triggers">
             <list>
                 <ref bean="runTime"/>
-                <ref bean="tpRunTime"/>
+                <!--<ref bean="tpRunTime"/>-->
             </list>
         </property>
         <property name="taskExecutor" ref="executor"/>
@@ -51,8 +51,8 @@
     <!-- 线程执行器配置，用于任务注册 -->
     <bean id="executor"
           class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
-        <property name="corePoolSize" value="10" />
-        <property name="maxPoolSize" value="10" />
+        <property name="corePoolSize" value="3" />
+        <property name="maxPoolSize" value="3" />
         <property name="queueCapacity" value="500" />
     </bean>
 </beans>

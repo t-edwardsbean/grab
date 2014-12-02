@@ -4,9 +4,8 @@
        xmlns:mongo="http://www.springframework.org/schema/data/mongo"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
-    <mongo:mongo host="192.168.253.130" port="27017" />
     <mongo:db-factory id="mongoDBFactory"
-                      host="t-130"
+                      host="${db.host}"
                       port="27017"
                       dbname="pm25"
             />
