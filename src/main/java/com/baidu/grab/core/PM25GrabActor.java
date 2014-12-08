@@ -100,6 +100,7 @@ public class PM25GrabActor extends UntypedActor {
             String cityJson = "";
             try {
                 cityJson = PM25Grab.getAllCityData(key);
+                log.debug("抓取完毕，准备格式化");
                 List<PM25Msg> pm25CityMsgs = gson.fromJson(cityJson, new TypeToken<List<PM25Msg>>() {
                 }.getType());
                 //过滤字段，封装成MongoPM25City
@@ -124,6 +125,7 @@ public class PM25GrabActor extends UntypedActor {
             try {
                 log.info("收到GrabStation事件，开始抓取");
                 stationJson = PM25Grab.getAllStationData(key);
+                log.debug("抓取完毕，准备格式化");
                 List<PM25Msg> pm25StationMsgs = gson.fromJson(stationJson, new TypeToken<List<PM25Msg>>() {
                 }.getType());
                 //过滤字段，封装成MongoPM25Station

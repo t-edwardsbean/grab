@@ -11,12 +11,16 @@ public class PM25Grab {
     public static String getAllCityData(String key) throws Exception {
         HttpUtil httpUtil = new HttpUtil();
         HttpResponse response = httpUtil.doGet("http://www.pm25.in/api/querys/aqi_ranking.json?token=" + key, null);
-        return EntityUtils.toString(response.getEntity());
+        String result = EntityUtils.toString(response.getEntity());
+        httpUtil.releaseConnection();
+        return result;
     }
 
     public static String getAllStationData(String key) throws Exception {
         HttpUtil httpUtil = new HttpUtil();
         HttpResponse response = httpUtil.doGet("http://www.pm25.in/api/querys/all_cities.json?token=" + key, null);
-        return EntityUtils.toString(response.getEntity());
+        String result = EntityUtils.toString(response.getEntity());
+        httpUtil.releaseConnection();
+        return result;
     }
 }

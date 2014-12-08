@@ -53,6 +53,7 @@ public class GrabSupervisor extends UntypedActor {
 
     @Override
     public void postStop() throws Exception {
+        log.info("postStop");
         super.postStop();
     }
 
@@ -62,6 +63,7 @@ public class GrabSupervisor extends UntypedActor {
 
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
+        log.info("preRestart");
     }
 
     @Override
