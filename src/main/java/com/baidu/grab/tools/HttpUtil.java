@@ -27,6 +27,7 @@ public class HttpUtil {
     public HttpClient getClient() {
         HttpClient client = new DefaultHttpClient();// 获取HttpClient对象
         client.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT,10000);
+        client.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT,30000);
         return client;// 获取HttpClient对象        client;
     }
 
@@ -34,6 +35,7 @@ public class HttpUtil {
         HttpClient client = new DefaultHttpClient();// 获取HttpClient对象
         client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, new HttpHost(proxy));
         client.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT,10000);
+        client.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT,30000);
         return client;
     }
 
