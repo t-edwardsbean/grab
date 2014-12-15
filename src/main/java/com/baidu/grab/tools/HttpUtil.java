@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by edwardsbean on 14-10-17.
@@ -88,6 +89,8 @@ public class HttpUtil {
     private HttpResponse exctueRequest(HttpRequestBase request, String proxy) throws Exception {
         HttpResponse response = null;
         this.httpRequest = request;
+        //不重用链接，设置close,防止出现大量Close_WAIT
+        httpRequest.addHeader("Connection","close");
         try {
             log.debug("excute request:" + request.getURI());
             log.debug("-----------------------------------");
