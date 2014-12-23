@@ -36,18 +36,17 @@ import scala.runtime.AbstractFunction0;
  */
 public class PM25GrabActor extends UntypedActor {
     LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-    private static ActorRef mongoActor;
-    private static String key;
+    private ActorRef mongoActor;
+    private String key;
     private Gson gson = new Gson();
-
-    private static SupervisorStrategy strategy = new OneForOneStrategy(-1,
-            Duration.create("10 second"), new Function<Throwable, SupervisorStrategy.Directive>() {
+    private static SupervisorStrategy strategy = new OneForOneStrategy(6,
+            Duration.create("60 second"), new Function<Throwable, SupervisorStrategy.Directive>() {
 
         public SupervisorStrategy.Directive apply(Throwable t) {
             //如果mongoActor出错，则重启它
             return restart();
         }
-    },false);
+    });
 
     @Override
     public void preStart() throws Exception {
@@ -56,6 +55,7 @@ public class PM25GrabActor extends UntypedActor {
                 "pm25MongoActor");
         ActorSystem system = getContext().system();
         key = system.settings().config().getString("pm25-key");
+        getContext().setReceiveTimeout(Duration.create(2,TimeUnit.MINUTES));
     }
 
     //重写postRestart,防止preStart又一次进行初始化
@@ -144,6 +144,9 @@ public class PM25GrabActor extends UntypedActor {
             } catch (Exception e) {
                 throw new HttpException("GrabStation Api无法访问数据源", e);
             }
+        } else if (message instanceof ReceiveTimeout) {
+            log.debug("回收grabActor");
+            self().tell(PoisonPill.getInstance(),ActorRef.noSender());
         } else {
             unhandled(message);
         }

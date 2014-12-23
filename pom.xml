@@ -14,7 +14,7 @@
         </repository>
         <repository>
             <id>company</id>
-            <url>http://192.168.253.149:8081/nexus/content/groups/public/</url>
+            <url>http://172.17.156.61:8081/nexus/content/groups/public/</url>
         </repository>
     </repositories>
     <dependencies>
@@ -95,7 +95,7 @@
         <profile>
             <id>test</id>
             <properties>
-                <db.host>192.168.253.130</db.host>
+                <db.host>172.17.156.63</db.host>
             </properties>
             <build>
                 <resources>

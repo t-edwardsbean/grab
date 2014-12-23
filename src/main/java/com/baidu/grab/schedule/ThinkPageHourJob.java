@@ -1,10 +1,9 @@
 package com.baidu.grab.schedule;
 
 import com.baidu.grab.GrabMain;
-import com.baidu.grab.core.GrabSupervisor;
+import com.baidu.grab.core.DispatcherActor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -19,7 +18,7 @@ public class ThinkPageHourJob {
         CityDict cityDict = (CityDict)GrabMain.applicationContext.getBean("cityDict");
         List<String> cities = cityDict.getAllCity();
         for (String city : cities) {
-            GrabSupervisor.grabCity(city);
+//            DispatcherActor.grabCity(city);
         }
     }
 }

@@ -20,8 +20,8 @@ public class ActorManager {
         try {
             Config config = ConfigFactory.load();
             system = ActorSystem.create("grabSystem", config);
-            system.actorOf(Props.create(GrabSupervisor.class),
-                    "supervisor");
+            system.actorOf(Props.create(DispatcherActor.class),
+                    "dispatcher");
             system.awaitTermination();
             log.error("grabSystem异常退出");
         } catch (Exception e) {

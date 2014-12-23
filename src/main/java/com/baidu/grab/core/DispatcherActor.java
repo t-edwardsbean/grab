@@ -19,21 +19,17 @@ import static akka.actor.SupervisorStrategy.resume;
  * 监控GrabActor
  * Created by edwardsbean on 14-11-5.
  */
-public class GrabSupervisor extends UntypedActor {
+public class DispatcherActor extends UntypedActor {
     LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-    public static ActorRef pm25GrabActor;
-    public static ActorRef thinkPageGrabActor;
 
-    public GrabSupervisor() {
-        pm25GrabActor = getContext().actorOf(Props.create(PM25GrabActor.class),
-                "pm25GrabActor");
+    public DispatcherActor() {
 
 //        thinkPageGrabActor = getContext().actorOf(Props.create(ThinkPageGrabActor.class),
 //                "thinkPageGrabActor");
     }
 
-    private static SupervisorStrategy strategy = new OneForOneStrategy(-1,
-            Duration.create("10 second"), new Function<Throwable, SupervisorStrategy.Directive>() {
+    private static SupervisorStrategy strategy = new OneForOneStrategy(6,
+            Duration.create("60 second"), new Function<Throwable, SupervisorStrategy.Directive>() {
         public SupervisorStrategy.Directive apply(Throwable t) {
             if (t instanceof ApiException) {
                 /*
@@ -49,7 +45,7 @@ public class GrabSupervisor extends UntypedActor {
                 return restart();
             }
         }
-    },false);
+    });
 
     @Override
     public void postStop() throws Exception {
@@ -68,18 +64,28 @@ public class GrabSupervisor extends UntypedActor {
 
     @Override
     public void onReceive(Object message) throws Exception {
-
+        if (message instanceof GrabCity) {
+            GrabCity grabCity = (GrabCity) message;
+            ActorRef pm25GrabActor = getContext().actorOf(Props.create(PM25GrabActor.class));
+            pm25GrabActor.tell(grabCity,ActorRef.noSender());
+        } else if (message instanceof GrabStation) {
+            GrabStation grabStation = (GrabStation) message;
+            ActorRef pm25GrabActor = getContext().actorOf(Props.create(PM25GrabActor.class));
+            pm25GrabActor.tell(grabStation,ActorRef.noSender());
+        } else {
+            unhandled(message);
+        }
     }
 
-    public static void grabCity(String city) {
-        thinkPageGrabActor.tell(new Grab(city), ActorRef.noSender());
-    }
+//    public static void grabCity(String city) {
+//        thinkPageGrabActor.tell(new Grab(city), ActorRef.noSender());
+//    }
 
-/*    public static void startGrabCity() {
-        pm25GrabActor.tell(new GrabCity(), ActorRef.noSender());
-    }
-
-    public static void startGrabStation() {
-        pm25GrabActor.tell(new GrabStation(), ActorRef.noSender());
-    }*/
+//    public static void startGrabCity() {
+//        pm25GrabActor.tell(new GrabCity(), ActorRef.noSender());
+//    }
+//
+//    public static void startGrabStation() {
+//        pm25GrabActor.tell(new GrabStation(), ActorRef.noSender());
+//    }
 }
