@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.net.InetAddress;
+import java.util.Properties;
 
 /**
  * Created by edwardsbean on 14-11-5.
@@ -23,7 +24,9 @@ public class GrabMain {
         String address = InetAddress.getLocalHost().getHostAddress();
         MDC.put("host", address);
         MDC.put("source", "grabApp");
-        PropertyConfigurator.configure("conf/log4j.properties");
+        Properties p = new Properties();
+        p.load(GrabMain.class.getResourceAsStream("/log4j.properties"));
+        PropertyConfigurator.configure(p);
         System.setProperty("org.terracotta.quartz.skipUpdateCheck","true");
         applicationContext = new ClassPathXmlApplicationContext("mongo.xml","quartz.xml","dict.xml");
         ActorManager manager = new ActorManager();
